@@ -1,10 +1,6 @@
 mod engine;
 pub mod ui;
 
-use eframe::{App, CreationContext};
-use egui::{CentralPanel, SidePanel};
-use egui_dock::{DockArea, DockState, TabViewer};
-
 use crate::ui::DebuggerApp;
 
 fn main() {
