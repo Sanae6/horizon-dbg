@@ -1,0 +1,3 @@
+[workspace]
+members = ["horizon-dbg", "horizon-dbg-cpp", "horizon-dbg-protocol"]
+resolver = "3"

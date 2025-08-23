@@ -1,0 +1,41 @@
+desired features
+- mappings
+- instruction listing
+- hex editor
+- process list
+- debug info
+	- dwarf :fearful:
+- pointer coloring
+- vtable recognizer
+- breakpoints
+	- watchpoints
+		- that break
+		- that save a list of pcs that wrote to it
+  - persisting between runs, without worry for aslr
+- goto like ghidra
+	- i will cry if no module relative addressing
+- cheat engine memory searcher
+- vscode run and debug
+  - make c++ breakpoints work
+- usb debugging for handheld mode
+  - invaluable for doing development pre-wifi
+- semihosting
+  - logging
+  - breakpoints
+
+problems
+- frontend architecture!
+	- how to best separate engine from ui
+  - handle dwarf integration
+- how to implement the c++-side packet processing (dealing with this myself -aubrey)
+	- rust static library
+		- postcard-rpc
+	- two implementations
+		- ass
+- dockspaces
+	- egui_dock
+- hex editor widget
+	- couldn't find one for egui unfortunately
+- instruction listing
+  - find disassemblers for armv7, armv8
+- debugger mocking for frontend development convenience
