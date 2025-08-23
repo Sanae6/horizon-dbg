@@ -6,7 +6,7 @@ use crate::ui::DebuggerApp;
 fn main() {
   let native_options = eframe::NativeOptions::default();
   eframe::run_native(
-    "My egui App",
+    "horizon-dbg",
     native_options,
     Box::new(|cc| Ok(Box::new(DebuggerApp::new(cc)))),
   )
