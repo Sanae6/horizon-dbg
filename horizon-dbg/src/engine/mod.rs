@@ -1,3 +1,2 @@
-pub struct DebuggerEngine {
-  
-}
+mod types;
+pub mod memory;

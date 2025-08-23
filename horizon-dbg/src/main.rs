@@ -1,5 +1,11 @@
+mod engine;
+pub mod ui;
+
 use eframe::{App, CreationContext};
 use egui::{CentralPanel, SidePanel};
+use egui_dock::{DockArea, DockState, TabViewer};
+
+use crate::ui::DebuggerApp;
 
 fn main() {
   let native_options = eframe::NativeOptions::default();
@@ -10,17 +16,3 @@ fn main() {
   )
   .unwrap();
 }
-
-struct DebuggerApp {}
-
-impl App for DebuggerApp {
-  fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-  }
-}
-
-impl DebuggerApp {
-  pub fn new(cc: &CreationContext<'_>) -> DebuggerApp {
-    DebuggerApp {}
-  }
-}
-
