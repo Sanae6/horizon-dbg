@@ -1362,10 +1362,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "horizon-dbg-cpp"
-version = "0.1.0"
-
-[[package]]
 name = "horizon-dbg-protocol"
 version = "0.1.0"
 
