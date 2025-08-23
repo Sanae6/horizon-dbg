@@ -1,13 +1,17 @@
 mod hexeditor;
 
 use eframe::{App, CreationContext};
-use egui::{ScrollArea, scroll_area::ScrollSource};
+use egui::{Button, CentralPanel, MenuBar, ScrollArea, TopBottomPanel, scroll_area::ScrollSource};
 use egui_dock::{DockArea, DockState, TabViewer};
 use hexeditor::HexEditor;
 
 enum Pane {
   ModuleList,
   MemoryMap,
+  InstructionListing,
+  ProcessList,
+  StructViewer,
+
   HexEditor {
     data: Vec<u8>,
     selected: Option<usize>,
@@ -23,6 +27,9 @@ impl TabViewer for PaneViewer {
     match tab {
       Pane::ModuleList => "Module List".into(),
       Pane::MemoryMap => "Memory Map".into(),
+      Pane::InstructionListing => "Listing".into(),
+      Pane::ProcessList => "Processes".into(),
+      Pane::StructViewer => "Struct Viewer".into(),
       Pane::HexEditor { .. } => "Hex Editor".into(),
     }
   }
@@ -42,6 +49,7 @@ impl TabViewer for PaneViewer {
             ui.add(HexEditor::new(data, selected));
           });
       }
+      _ => {}
     }
   }
 }
@@ -70,6 +78,16 @@ impl DebuggerApp {
 impl App for DebuggerApp {
   fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
     // ctx.set_pixels_per_point(1.0);
+    TopBottomPanel::top("menu_bar").show(ctx, |ui| {
+      MenuBar::new().ui(ui, |ui| {
+        ui.menu_button("Windows", |ui| {
+          if ui.button("Hex Editor").clicked() {
+            self.dock_state.add_window(vec![Pane::HexEditor { data: vec![0u8; 0x1000], selected: Some(0) }]);
+          }
+        })
+      });
+    });
+
     DockArea::new(&mut self.dock_state).show(ctx, &mut PaneViewer);
   }
 }
