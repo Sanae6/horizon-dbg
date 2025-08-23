@@ -1,6 +1,7 @@
 mod hexeditor;
 
 use eframe::{App, CreationContext};
+use egui::{ScrollArea, scroll_area::ScrollSource};
 use egui_dock::{DockArea, DockState, TabViewer};
 use hexeditor::HexEditor;
 
@@ -35,7 +36,11 @@ impl TabViewer for PaneViewer {
         ui.heading("so cool");
       }
       Pane::HexEditor { data, selected } => {
-        ui.add(HexEditor::new(data, selected));
+        ScrollArea::vertical()
+          .scroll_source(ScrollSource::MOUSE_WHEEL | ScrollSource::SCROLL_BAR)
+          .show(ui, |ui| {
+            ui.add(HexEditor::new(data, selected));
+          });
       }
     }
   }
@@ -54,7 +59,7 @@ impl DebuggerApp {
         Pane::MemoryMap,
         Pane::ModuleList,
         Pane::HexEditor {
-          data: vec![0u8; 0x80],
+          data: vec![0u8; 0x1000],
           selected: None,
         },
       ]),
