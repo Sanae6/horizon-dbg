@@ -9,4 +9,7 @@ egui = "0.32.1"
 egui_dock = "0.17.0"
 gimli = "0.32.1"
 nodit = "0.9.2"
-tokio = { version = "1.47.1", features = ["rt-multi-thread", "macros", "net"] }
+postcard-rpc = { version = "0.11.13", features = ["use-std"] }
+thunderdome = "0.6.1"
+tokio = { version = "1.47.1", features = ["rt-multi-thread", "macros", "net", "sync"] }
+xtra = { version = "0.6.0", features = ["tokio"] }

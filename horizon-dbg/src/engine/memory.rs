@@ -2,23 +2,17 @@ use nodit::{Interval, NoditMap};
 
 use crate::engine::types::RegionType;
 
-pub struct MemoryMap {
-  interval_tree: NoditMap<Interval<u32>, u32, u32>,
+pub struct Memory {
+  interval_tree: NoditMap<Interval<u32>, u32, Region>,
 }
 
 struct Region {
-  region_type: RegionType,
-  start: u64,
-  end: u64,
+  pub region_type: RegionType,
+  pub start: u64,
+  pub end: u64,
 }
 
-pub struct MemoryWatchRegion {
-  start_page: u64,
-  data: WatchRegionData,
-}
-
-pub enum WatchRegionData {
-  Waiting { pages: u32 },
-  Populated { data: Vec<Option<[u8; 0x1000]>> },
-  Error // todo
+pub struct Subscription {
+  pub address: u64,
+  pub size: u32,
 }
