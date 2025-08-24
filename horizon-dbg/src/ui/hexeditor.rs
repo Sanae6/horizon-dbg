@@ -155,6 +155,35 @@ impl<'a> Widget for HexEditor<'a> {
         return;
       }
 
+      if let Some(idx) = *self.selected {
+        if i.key_pressed(Key::Delete) {
+          self.data[idx] = 0;
+        }
+
+        // handle arrow key presses
+        if i.key_pressed(Key::ArrowUp)
+          && let Some(up) = idx.checked_sub(self.bytes_per_row)
+        {
+          *self.selected = Some(up);
+        } else if i.key_pressed(Key::ArrowDown)
+          && let Some(down) = idx.checked_add(self.bytes_per_row)
+          && down < self.data.len()
+        {
+          *self.selected = Some(down);
+        } else if i.key_pressed(Key::ArrowLeft)
+          && idx % 16 > 0
+          && let Some(left) = idx.checked_sub(1)
+        {
+          *self.selected = Some(left);
+        } else if i.key_pressed(Key::ArrowRight)
+          && idx % 16 < 15
+          && let Some(right) = idx.checked_add(1)
+          && right < self.data.len()
+        {
+          *self.selected = Some(right);
+        }
+      }
+
       for event in &i.events {
         if let Event::Text(text) = event {
           if let HexEditorState::Idle = self.state
