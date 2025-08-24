@@ -1,17 +1,32 @@
-use egui::{Align2, Color32, FontId, Pos2, Rect, Vec2, Widget};
+use egui::{Align2, Color32, Event, FontId, Key, Pos2, Rect, Vec2, Widget};
+
+pub enum HexEditorState {
+  Idle,
+  Editing {
+    idx: usize,
+    temp_value: u8,
+    nibble: u8,
+  },
+}
 
 pub struct HexEditor<'a> {
   data: &'a mut [u8],
   bytes_per_row: usize,
   selected: &'a mut Option<usize>,
+  state: &'a mut HexEditorState,
 }
 
 impl<'a> HexEditor<'a> {
-  pub fn new(data: &'a mut [u8], selected: &'a mut Option<usize>) -> Self {
+  pub fn new(
+    data: &'a mut [u8],
+    selected: &'a mut Option<usize>,
+    state: &'a mut HexEditorState,
+  ) -> Self {
     Self {
       data,
       bytes_per_row: 16,
       selected,
+      state,
     }
   }
 }
@@ -77,7 +92,7 @@ impl<'a> Widget for HexEditor<'a> {
           Color32::GRAY,
         );
 
-        for (col, byte) in chunk.iter().enumerate() {
+        for (col, mut byte) in chunk.iter().enumerate() {
           let i = row * self.bytes_per_row + col;
           let col_group = col / 4;
 
@@ -103,7 +118,16 @@ impl<'a> Widget for HexEditor<'a> {
             .map(|p| outer_rect.contains(p))
             .unwrap_or(false);
 
-          if *self.selected == Some(i) {
+          if let HexEditorState::Editing {
+            idx, temp_value, ..
+          } = &self.state
+            && *idx == i
+          {
+            painter.rect_filled(outer_rect, 0.0, Color32::LIGHT_BLUE);
+            byte = temp_value;
+          } else if *self.selected == Some(i)
+            && let HexEditorState::Idle = &self.state
+          {
             painter.rect_filled(outer_rect, 0.0, Color32::GRAY);
           } else if hovered {
             painter.rect_filled(outer_rect, 0.0, Color32::DARK_GRAY);
@@ -119,6 +143,57 @@ impl<'a> Widget for HexEditor<'a> {
 
           if response.clicked() && hovered {
             *self.selected = Some(i);
+            *self.state = HexEditorState::Idle;
+          }
+        }
+      }
+    });
+
+    ui.input(|i| {
+      if i.key_pressed(Key::Escape) || i.key_pressed(Key::Enter) {
+        *self.state = HexEditorState::Idle;
+        return;
+      }
+
+      for event in &i.events {
+        if let Event::Text(text) = event {
+          if let HexEditorState::Idle = self.state
+            && let Some(idx) = *self.selected
+            && let Ok(_) = u8::from_str_radix(&text, 16)
+          {
+            *self.state = HexEditorState::Editing {
+              idx,
+              temp_value: self.data[idx],
+              nibble: 0,
+            };
+          }
+
+          if let HexEditorState::Editing {
+            idx,
+            temp_value,
+            nibble,
+          } = self.state
+          {
+            if let Ok(val) = u8::from_str_radix(&text, 16) {
+              if *nibble == 0 {
+                *temp_value = (*temp_value & 0x0f) | (val << 4);
+                *nibble = 1;
+              } else if *nibble == 1 {
+                *temp_value = (*temp_value & 0xf0) | val;
+                self.data[*idx] = *temp_value;
+
+                if *idx + 1 < self.data.len() {
+                  *self.selected = Some(*idx + 1);
+                  *self.state = HexEditorState::Editing {
+                    idx: *idx + 1,
+                    temp_value: self.data[*idx + 1],
+                    nibble: 0,
+                  };
+                } else {
+                  *self.state = HexEditorState::Idle;
+                }
+              }
+            }
           }
         }
       }

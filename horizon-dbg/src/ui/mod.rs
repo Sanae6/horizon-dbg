@@ -1,9 +1,10 @@
 mod hexeditor;
 
 use eframe::{App, CreationContext};
-use egui::{Button, CentralPanel, MenuBar, ScrollArea, TopBottomPanel, scroll_area::ScrollSource};
+use egui::{MenuBar, ScrollArea, TopBottomPanel, scroll_area::ScrollSource};
 use egui_dock::{DockArea, DockState, TabViewer};
-use hexeditor::HexEditor;
+
+use crate::ui::hexeditor::{HexEditor, HexEditorState};
 
 enum Pane {
   ModuleList,
@@ -15,6 +16,7 @@ enum Pane {
   HexEditor {
     data: Vec<u8>,
     selected: Option<usize>,
+    state: HexEditorState,
   },
 }
 
@@ -42,11 +44,15 @@ impl TabViewer for PaneViewer {
       Pane::MemoryMap => {
         ui.heading("so cool");
       }
-      Pane::HexEditor { data, selected } => {
+      Pane::HexEditor {
+        data,
+        selected,
+        state,
+      } => {
         ScrollArea::vertical()
           .scroll_source(ScrollSource::MOUSE_WHEEL | ScrollSource::SCROLL_BAR)
           .show(ui, |ui| {
-            ui.add(HexEditor::new(data, selected));
+            ui.add(HexEditor::new(data, selected, state));
           });
       }
       _ => {}
@@ -69,6 +75,7 @@ impl DebuggerApp {
         Pane::HexEditor {
           data: vec![0u8; 0x1000],
           selected: None,
+          state: HexEditorState::Idle,
         },
       ]),
     }
@@ -82,7 +89,11 @@ impl App for DebuggerApp {
       MenuBar::new().ui(ui, |ui| {
         ui.menu_button("Windows", |ui| {
           if ui.button("Hex Editor").clicked() {
-            self.dock_state.add_window(vec![Pane::HexEditor { data: vec![0u8; 0x1000], selected: Some(0) }]);
+            self.dock_state.add_window(vec![Pane::HexEditor {
+              data: vec![0u8; 0x1000],
+              selected: Some(0),
+              state: HexEditorState::Idle,
+            }]);
           }
         })
       });
