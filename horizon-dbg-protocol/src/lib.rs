@@ -29,3 +29,11 @@ topics! {
   | BreakpointHit       | BreakpointHitMsg      | "breakpoint_hit"       |
   | SubscriptionUpdated | SubscriptionUpdateMsg | "subscription_updated" |
 }
+
+topics! {
+  list = APP_TOPICS;
+  direction = TopicDirection::ToServer;
+  
+  | TopicTy             | MessageTy             | Path                   |
+  | -------             | ---------             | ----                   |
+}
