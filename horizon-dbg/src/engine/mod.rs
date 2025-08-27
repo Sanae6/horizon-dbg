@@ -1,12 +1,10 @@
-use egui::ahash::HashMap;
 use thunderdome::{Arena, Index};
-use xtra::Address;
 
 use crate::engine::{connection::Connection, memory::Subscription};
 
-mod types;
-pub mod memory;
 pub mod connection;
+pub mod memory;
+mod types;
 
 struct DebuggerInterface {
   connection: Connection,
@@ -15,17 +13,35 @@ struct DebuggerInterface {
 
 impl DebuggerInterface {
   pub fn new() -> DebuggerInterface {
-    DebuggerInterface { connection: todo!(), subscriptions: Default::default() }
+    DebuggerInterface {
+      connection: todo!(),
+      subscriptions: Default::default(),
+    }
   }
 
   pub fn add_subscription(&mut self, address: u64, size: u32) -> Index {
     // todo: start at cursor
-    self.subscriptions.insert(Subscription { address, size })
+    let index = self.subscriptions.insert(Subscription { address, size });
+    self
+      .connection
+      .update_subscription_address(index.to_bits(), address, size);
+    index
   }
 
   pub fn update_subscription_address(&mut self, index: Index, address: u64) {
-    self.subscriptions.get_mut(index).expect("invalid index").address = address;
+    let sub = self.subscriptions.get_mut(index).expect("invalid index");
+    sub.address = address;
+    self
+      .connection
+      .update_subscription_address(index.to_bits(), address, sub.size);
+  }
 
-    
+  pub fn delete_subscription(&mut self, index: Index) {
+    self
+      .subscriptions
+      .remove(index)
+      .expect("tried to remove twice");
+
+    self.connection.delete_subscription(index.to_bits());
   }
 }

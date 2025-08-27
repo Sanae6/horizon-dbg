@@ -1561,6 +1561,7 @@ dependencies = [
  "egui",
  "egui_dock",
  "gimli 0.32.1",
+ "horizon-dbg-protocol",
  "nodit",
  "postcard-rpc",
  "thunderdome",
@@ -1572,9 +1573,11 @@ dependencies = [
 name = "horizon-dbg-protocol"
 version = "0.1.0"
 dependencies = [
+ "postcard",
  "postcard-rpc",
  "postcard-schema",
  "serde",
+ "zerocopy",
 ]
 
 [[package]]
