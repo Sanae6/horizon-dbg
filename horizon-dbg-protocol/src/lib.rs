@@ -2,8 +2,6 @@
 
 use postcard_rpc::Key;
 
-use crate::breakpoints::{BreakpointHitMsg, SET_BREAKPOINT};
-
 extern crate alloc;
 
 pub mod breakpoints;
@@ -28,6 +26,7 @@ pub struct Keygen {
   pub endpoint: &'static str,
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! keygen {
   (const $name: ident: $type: ty = $endpoint: literal) => {
@@ -60,6 +59,8 @@ pub const fn sort_arr<const N: usize, H>(mut arr: [(Key, H); N]) -> [(Key, H); N
   arr
 }
 
+#[doc(hidden)]
+#[macro_export]
 macro_rules! gen_func {
   ($handler: ident, $type: ty, $handler_func: ident) => {{
     let generated_function: fn(
@@ -78,6 +79,7 @@ macro_rules! gen_func {
   }};
 }
 
+#[macro_export]
 macro_rules! gen_handler {
   (
     pub enum $enum: ident;
@@ -90,6 +92,7 @@ macro_rules! gen_handler {
         fn $func_name(&mut self, value: $type) -> Result<(), ()>; // todo: error type
       )*
     }
+
 
     pub fn $handler_func_name(key: u16, bytes: &[u8], handler: &mut impl $handler) -> Result<(), $crate::Error> {
       type Handler = fn(&[u8], &mut dyn $handler) -> Result<(), $crate::Error>;
@@ -104,7 +107,7 @@ macro_rules! gen_handler {
       let entry = SORTED_ARRAY
         .binary_search_by_key(&key, |value| u16::from_le_bytes($crate::postcard_rpc::Key2::from_key8(value.0).to_bytes()))
         .map_err(|_| $crate::Error::NoHandler)?;
-     SORTED_ARRAY[entry].1(bytes, handler)?;
+      SORTED_ARRAY[entry].1(bytes, handler)?;
 
       Ok(())
     }
@@ -115,11 +118,4 @@ macro_rules! gen_handler {
       ),*
     }
   };
-}
-
-gen_handler! {
-  pub enum ClientTypes;
-  handle_server_message(key: u16, bytes: &[u8], handler: &mut dyn ClientHandler) {
-    handle_breakpoint_hit(BreakpointHitMsg) = SET_BREAKPOINT,
-  }
 }

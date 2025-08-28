@@ -6,15 +6,15 @@ pub mod connection;
 pub mod memory;
 mod types;
 
-struct DebuggerInterface {
+pub struct DebuggerInterface {
   connection: Connection,
   subscriptions: Arena<Subscription>,
 }
 
 impl DebuggerInterface {
-  pub fn new() -> DebuggerInterface {
+  pub fn new(connection: Connection) -> DebuggerInterface {
     DebuggerInterface {
-      connection: todo!(),
+      connection,
       subscriptions: Default::default(),
     }
   }

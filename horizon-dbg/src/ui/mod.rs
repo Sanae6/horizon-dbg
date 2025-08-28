@@ -1,10 +1,16 @@
+mod connect;
 mod hexeditor;
 
 use eframe::{App, CreationContext};
-use egui::{MenuBar, ScrollArea, TopBottomPanel, scroll_area::ScrollSource};
+use egui::{
+  Align2, Area, MenuBar, ScrollArea, TopBottomPanel, Vec2, Window, scroll_area::ScrollSource,
+};
 use egui_dock::{DockArea, DockState, TabViewer};
 
-use crate::ui::hexeditor::{HexEditor, HexEditorState};
+use crate::ui::{
+  connect::ConnectMenu,
+  hexeditor::{HexEditor, HexEditorState},
+};
 
 enum Pane {
   ModuleList,
@@ -60,15 +66,20 @@ impl TabViewer for PaneViewer {
   }
 }
 
-pub struct DebuggerApp {
-  dock_state: DockState<Pane>,
+pub enum DebuggerApp {
+  Disconnected(ConnectMenu),
+  Main { dock_state: DockState<Pane> },
 }
 
 impl DebuggerApp {
   pub fn new(cc: &CreationContext<'_>) -> DebuggerApp {
     replace_fonts(&cc.egui_ctx);
 
-    DebuggerApp {
+    DebuggerApp::Disconnected(ConnectMenu::new())
+  }
+
+  pub fn switch_to_debugger(&mut self) {
+    *self = DebuggerApp::Main {
       dock_state: DockState::new(vec![
         Pane::MemoryMap,
         Pane::ModuleList,
@@ -85,27 +96,36 @@ impl DebuggerApp {
 impl App for DebuggerApp {
   fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
     // ctx.set_pixels_per_point(1.0);
-    TopBottomPanel::top("menu_bar").show(ctx, |ui| {
-      MenuBar::new().ui(ui, |ui| {
-        ui.menu_button("Windows", |ui| {
-          if ui.button("Hex Editor").clicked() {
-            self.dock_state.add_window(vec![Pane::HexEditor {
-              data: vec![0u8; 0x1000],
-              selected: Some(0),
-              state: HexEditorState::Idle,
-            }]);
-          }
-        })
-      });
-    });
+    match self {
+      DebuggerApp::Disconnected(disconnected_state) => {
+        Area::new("disconnected_area".into())
+          .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+          .show(ctx, |ui| disconnected_state.show(ui));
+      }
+      DebuggerApp::Main { dock_state } => {
+        TopBottomPanel::top("menu_bar").show(ctx, |ui| {
+          MenuBar::new().ui(ui, |ui| {
+            ui.menu_button("Windows", |ui| {
+              if ui.button("Hex Editor").clicked() {
+                dock_state.add_window(vec![Pane::HexEditor {
+                  data: vec![0u8; 0x1000],
+                  selected: Some(0),
+                  state: HexEditorState::Idle,
+                }]);
+              }
+            })
+          });
+        });
 
-    DockArea::new(&mut self.dock_state).show(ctx, &mut PaneViewer);
+        DockArea::new(dock_state).show(ctx, &mut PaneViewer);
+      }
+    }
   }
 }
 
 fn replace_fonts(ctx: &egui::Context) {
   let mut fonts = egui::FontDefinitions::default();
-  
+
   fonts.font_data.insert(
     "SF Mono".to_owned(),
     std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
